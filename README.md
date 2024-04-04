@@ -16,7 +16,7 @@ $ docker run --name wireguard                                      \
   --cap-add SYS_MODULE                                             \
   --sysctl net.ipv4.conf.all.src_valid_mark=1                      \
   -v /path/to/your/config.conf:/etc/wireguard/wg0.conf             \
-  jordanpotter/wireguard
+  ghcr.io/captmicr0/docker-wireguard
 ```
 
 Afterwards, you can link other containers to this one:
@@ -35,7 +35,7 @@ Here is the same example as above, but using Docker Compose:
 services:
   wireguard:
     container_name: wireguard
-    image: jordanpotter/wireguard
+    image: ghcr.io/captmicr0/docker-wireguard:latest
     cap_add:
       - NET_ADMIN
       - SYS_MODULE
@@ -53,23 +53,18 @@ services:
       - wireguard
 ```
 
-## Podman
+## Selecting one of multiple configs
 
-```bash
-$ podman run --name wireguard                                      \
-  --cap-add NET_ADMIN                                              \
-  --cap-add NET_RAW                                                \
-  --sysctl net.ipv4.conf.all.src_valid_mark=1                      \
-  -v /path/to/your/config.conf:/etc/wireguard/wg0.conf             \
-  docker.io/jordanpotter/wireguard
+Instead of mapping a single file, map the directory containing multiple wireguard configuration files.
+```
+    volumes:
+      - /path/to/your/configs:/etc/wireguard
 ```
 
-Afterwards, you can link other containers to this one:
-
-```bash
-$ podman run --rm                                                  \
-  --net=container:wireguard                                        \
-  docker.io/curlimages/curl ifconfig.io
+Set the ENV variable WG_CONF to the configuration file you want to use
+```
+    env:
+      - WG_CONF=wg0.conf
 ```
 
 ## Local Network
@@ -83,7 +78,7 @@ $ docker run --name wireguard                                      \
   --sysctl net.ipv4.conf.all.src_valid_mark=1                      \
   -v /path/to/your/config.conf:/etc/wireguard/wg0.conf             \
   -e LOCAL_SUBNETS=10.1.0.0/16,10.2.0.0/16,10.3.0.0/16             \
-  jordanpotter/wireguard
+  ghcr.io/captmicr0/docker-wireguard:latest
 ```
 
 Additionally, you can expose ports to allow your local network to access services linked to the WireGuard container:
@@ -95,7 +90,7 @@ $ docker run --name wireguard                                      \
   --sysctl net.ipv4.conf.all.src_valid_mark=1                      \
   -v /path/to/your/config.conf:/etc/wireguard/wg0.conf             \
   -p 8080:80                                                       \
-  jordanpotter/wireguard
+  ghcr.io/captmicr0/docker-wireguard
 ```
 
 ```bash
@@ -103,9 +98,3 @@ $ docker run --rm                                                  \
   --net=container:wireguard                                        \
   nginx
 ```
-
-## Versioning
-
-This container image is rebuilt weekly with the latest security updates. Each build runs tests to verify all features continue to work as expected, including the kill switch and local network routing.
-
-Images are tagged with the date of the build in `YYYY-MM-DD` format. The available image tags are listed [here](https://hub.docker.com/r/jordanpotter/wireguard/tags).

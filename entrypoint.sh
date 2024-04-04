@@ -10,11 +10,22 @@ fi
 
 configs=`find /etc/wireguard -type f -printf "%f\n"`
 if [[ -z "$configs" ]]; then
-	echo "No configuration file found in /etc/wireguard" >&2
+	echo "No configuration file(s) found in /etc/wireguard" >&2
 	exit 1
+else
+	echo "Configuration files found:" >&2
+	echo "$configs"
 fi
 
-config=`echo $configs | head -n 1`
+config=`echo "$configs" | head -n 1`
+
+if [[ -n "$WG_CONF" ]]; then
+	echo "Using configuration file specified in ENV: '$WG_CONF'" >&2
+	config=$WG_CONF
+else
+	echo "Using first configuration file found: '$config'" >&2
+fi
+
 interface="${config%.*}"
 
 if [[ "$(cat /proc/sys/net/ipv4/conf/all/src_valid_mark)" != "1" ]]; then
